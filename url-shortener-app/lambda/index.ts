@@ -6,7 +6,7 @@ const TableName: string = process.env.TABLE_NAME;
 
 export const handler = async (event: any): Promise<any> => {
     console.log("event:", event);
-    console.log("event:", event.queryStringParameters.targeturl);
+    // console.log("event:", event.queryStringParameters.targeturl);
     if (event.queryStringParameters?.targeturl) {
         console.log("Calling create short url...");
         const shortUrl = await createShortUrl(
@@ -58,7 +58,7 @@ const createShortUrl = async (
     const { Items } = await dynamoDb
         .query({
             TableName,
-            // IndexName: "targetUrl",
+            IndexName: "targetUrl",
             KeyConditionExpression: "targetUrl = :t",
             ExpressionAttributeValues: {
                 ":t": targetUrl,
@@ -71,16 +71,14 @@ const createShortUrl = async (
         id = Items[0].id;
     } else {
         id = uuid.v4().slice(0, 8);
-
-        await dynamoDb
-            .put({
-                TableName,
-                Item: {
-                    id,
-                    targetUrl,
-                },
-            })
-            .promise();
+        const params = {
+            TableName: TableName,
+            Item: {
+                id: id,
+                targeturl: targetUrl,
+            },
+        };
+        await dynamoDb.put(params).promise();
     }
 
     const redirectUrl =

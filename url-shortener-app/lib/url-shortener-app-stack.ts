@@ -5,6 +5,8 @@ import {
     LambdaToDynamoDBProps,
 } from "@aws-solutions-constructs/aws-lambda-dynamodb";
 import { Construct } from "constructs";
+// import { PolicyStatement } from "@aws-cdk-lib/aws-iam";
+import * as dynamodb from "@aws-cdk/aws-dynamodb";
 
 export class UrlShortenerAppStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -31,6 +33,14 @@ export class UrlShortenerAppStack extends Stack {
         // Function URL
         const fnUrl = ldConstruct.lambdaFunction.addFunctionUrl({
             authType: aws_lambda.FunctionUrlAuthType.NONE,
+        });
+
+        ldConstruct.dynamoTable.addGlobalSecondaryIndex({
+            partitionKey: {
+                name: "targetUrl",
+                type: dynamodb.AttributeType.STRING,
+            },
+            indexName: "targetUrl",
         });
 
         ldConstruct.dynamoTable.grantReadWriteData(backend);
